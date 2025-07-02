@@ -122,9 +122,16 @@ export const signIn = async (email: string, password: string): Promise<{ user: U
       .single();
 
     if (profileError) {
-      console.error('Erro ao buscar perfil:', profileError);
-      return { user: null, error: 'Erro ao carregar perfil do usuário' };
-    }
+  console.error('Erro ao criar perfil →', profileError);
+
+  // trata violação de UNIQUE (e-mail duplicado)
+  if (profileError.code === '23505') {
+    return { user: null, error: 'Este e-mail já está em uso.' };
+  }
+
+  // fallback genérico
+  return { user: null, error: 'Não foi possível criar seu perfil. Tente novamente.' };
+}
 
     return { user: profileData, error: null };
   } catch (error: any) {
