@@ -35,7 +35,7 @@ export const signUp = async (email: string, password: string, fullName: string):
     }
 
     // 2. Criar perfil na tabela profiles
-    const { data: profileData, error: profileError } = await supabase
+    const { error: profileError } = await supabase
       .from('profiles')
       .insert({
         id: authData.user.id,
@@ -43,16 +43,27 @@ export const signUp = async (email: string, password: string, fullName: string):
         full_name: fullName,
         role: 'STUDENT', // Por padrão, novos usuários são estudantes
         status: 'ACTIVE'
-      })
-      .select()
-      .single();
+      });
 
     if (profileError) {
       console.error('Erro ao criar perfil:', profileError);
       return { user: null, error: 'Erro ao criar perfil do usuário' };
     }
 
-    return { user: profileData, error: null };
+    // Retornar dados básicos do usuário criado
+    return {
+      user: {
+        id: authData.user.id,
+        email: authData.user.email!,
+        full_name: fullName,
+        role: 'STUDENT',
+        avatar_url: null,
+        status: 'ACTIVE',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      error: null
+    };
   } catch (error: any) {
     console.error('Erro no registro:', error);
     return { user: null, error: error.message || 'Erro interno do sistema' };
